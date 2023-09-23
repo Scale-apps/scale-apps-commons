@@ -1,5 +1,5 @@
 # Define the source and destination folders
-ELIXIR_FOLDER := ../phx-boilerplate
+ELIXIR_FOLDER := ../phx-boilerplate/lib
 FLASK_FOLDER := ../flask-boilerplate
 SHARED_FOLDER := ./shared
 

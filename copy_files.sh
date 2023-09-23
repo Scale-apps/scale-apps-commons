@@ -15,7 +15,7 @@ fi
 find "$source_folder" -type f | while read -r source_file; do
   # Get the file name without the path
   file_name=$(basename "$source_file")
-
+  echo "Source folder: $source_folder"
   # Check if a file with the same name exists in the destination folder
   if [ -e "$destination_folder/$file_name" ]; then
     # If a file with the same name exists, copy the file from source to destination
