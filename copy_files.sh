@@ -11,11 +11,14 @@ if [ ! -d "$source_folder" ] || [ ! -d "$destination_folder" ]; then
   exit 1
 fi
 
-# Iterate through files in the source folder recursively
-find "$source_folder" -type f | while read -r source_file; do
+# Array of subfolders to exclude. Currently it is excluding only Elixir project. May need to add Java and Python specific exclusions
+exclude_subfolders=("node_modules" "deps")
+
+# Iterate through files in the source folder recursively, excluding specified subfolders and their contents
+find "$source_folder" \( -type d -name "${exclude_subfolders[0]}" -prune \) -o \( -type d -name "${exclude_subfolders[1]}" -prune \) -o -type f | while read -r source_file; do
   # Get the file name without the path
   file_name=$(basename "$source_file")
-  echo "Source folder: $source_folder"
+
   # Check if a file with the same name exists in the destination folder
   if [ -e "$destination_folder/$file_name" ]; then
     # If a file with the same name exists, copy the file from source to destination
