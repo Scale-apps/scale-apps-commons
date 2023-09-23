@@ -1,7 +1,7 @@
 # Define the source and destination folders
-ELIXIR_FOLDER := ../phx-boilerplate
-FLASK_FOLDER := ../flask-boilerplate
-SHARED_FOLDER := ./shared
+ELIXIR_FOLDER := ../phx-boilerplate/lib/web
+FLASK_FOLDER := ../flask-boilerplate/web
+SHARED_FOLDER := ./shared/web
 
 # Define the Bash script to perform the copy operation
 SCRIPT := copy_files.sh

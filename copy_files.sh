@@ -14,17 +14,7 @@ fi
 # Array of subfolders to exclude. Currently it is excluding only Elixir project. May need to add Java and Python specific exclusions
 exclude_subfolders=("node_modules" "deps")
 
-# Iterate through files in the source folder recursively, excluding specified subfolders and their contents
-find "$source_folder" \( -type d -name "${exclude_subfolders[0]}" -prune \) -o \( -type d -name "${exclude_subfolders[1]}" -prune \) -o -type f | while read -r source_file; do
-  # Get the file name without the path
-  file_name=$(basename "$source_file")
-
-  # Check if a file with the same name exists in the destination folder
-  if [ -e "$destination_folder/$file_name" ]; then
-    # If a file with the same name exists, copy the file from source to destination
-    cp "$source_file" "$destination_folder/$file_name"
-    echo "Copied: $file_name"
-  fi
-done
+# Use rsync to copy files from source to destination, preserving subfolder structure and only copying existing files
+rsync -a --exclude="${exclude_subfolders[0]}" --exclude="${exclude_subfolders[1]}" --existing "$source_folder/" "$destination_folder/"
 
 echo "Done."
