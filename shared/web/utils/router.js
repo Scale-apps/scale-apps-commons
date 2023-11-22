@@ -1,4 +1,11 @@
-// Create a custom DOMContentLoaded event to trigger resync of HTMX
+/**
+ * @typedef {Object} RouteConfig
+ * @property {string} name - The name of the state.
+ * @property {string} url - The URL associated with the state.
+ * @property {string} serverPath - The server path associated with the state.
+ */
+
+// Create a custom DOMContentLoaded event to trigger resync of any library that depends on this
 const domContentLoadedEvent = new Event("DOMContentLoaded", {
   bubbles: true,
   cancelable: true,
@@ -66,9 +73,6 @@ export function fetchIntoDom(stateDef) {
     .then((response) => response.text())
     .then((text) => {
       parent.innerHTML = text;
-    })
-    .then(() => {
-      // This will allow all HTMX attributes to function in partials
       document.dispatchEvent(domContentLoadedEvent);
     });
 }
@@ -107,7 +111,7 @@ export function clearRenderedDom(stateDef) {
  * Generate an array of default CRUD controller route configurations for a given route name.
  *
  * @param {string} routeName - The base name of the route.
- * @returns {import('../app.js').RouteConfig[]} An array of default route configurations.
+ * @returns {RouteConfig[]} An array of default route configurations.
  */
 export function generateRouteConfig(routeName) {
   const baseServerPath = `/_${routeName}`;
@@ -132,4 +136,48 @@ export function generateRouteConfig(routeName) {
   ];
 
   return routes;
+}
+
+/**
+ * @param {RouteConfig[]} routes - routes supported by application
+ */
+export function initRouter(routes) {
+  /**
+   * @type {import("@uirouter/core")}
+   */
+  const uiRouter = window["@uirouter/core"];
+
+  const router = new uiRouter.UIRouter();
+  router.plugin(uiRouter.pushStateLocationPlugin);
+  router.plugin(uiRouter.servicesPlugin);
+
+  // This transition hook renders each active states' html property
+  router.transitionService.onSuccess(
+    {},
+    /**
+     * @param {import("@uirouter/core").Transition} trans
+     */
+    (trans) => {
+      trans.exiting().forEach((stateDef) => clearRenderedDom(stateDef));
+      trans.entering().forEach((stateDef) => fetchIntoDom(stateDef));
+    },
+  );
+
+  // Route definitions
+  routes.forEach((config) => {
+    router.stateRegistry.register({
+      name: config.name,
+      url: config.url,
+      params: { server_path: config.serverPath },
+    });
+  });
+
+  router.urlService.rules.initial({ state: "home" });
+  router.urlService.rules.otherwise({ state: "home" });
+  router.urlService.listen();
+  router.urlService.sync();
+
+  // Setup-globals
+  window.router = router;
+  window.stateService = router.stateService;
 }
